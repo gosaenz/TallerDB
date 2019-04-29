@@ -1,0 +1,133 @@
+//Coleccion de Marca
+db.marca.insertOne({ _id: 1, nombre: 'Nissan' });
+db.marca.insertOne({ _id: 2, nombre: 'Toyota' });
+db.marca.insertOne({ _id: 3, nombre: 'BMW' });
+
+//Coleccion de Estilo
+db.estilo.insertOne({ _id: 1, nombre: 'Sedan' });
+db.estilo.insertOne({ _id: 2, nombre: 'Pickup' });
+db.estilo.insertOne({ _id: 3, nombre: 'TodoTerreno' });
+db.estilo.insertOne({ _id: 4, nombre: 'Microbus' });
+
+//Coleccion de Vehiculo
+db.vehiculo.insertOne({ placa: 413513,
+                        capacidadCombustible: '40 galones',
+                        idMarca: 1,
+                        idEstilo: 2,
+                        modelo: 'X-Trail',
+                        color: 'Azul',
+                        cilindrada: 8,
+                        combustible: 'Diesel',
+                        transmision: 'Manual',
+                        año: 2018,
+                        extras:['4x4', 'AC'],
+                        numeroPasajeros: 5,
+                        rentaDiaria: 20,
+                        estado: 'Rentado' });
+db.vehiculo.insertOne({ placa: 413512,
+                        capacidadCombustible: '50 galones',
+                        idMarca: 1,
+                        idEstilo: 3,
+                        modelo: 'Civic',
+                        color: 'Gris',
+                        cilindrada: 4,
+                        combustible: 'Gasolina',
+                        transmision: 'Manual',
+                        año: 2017,
+                        extras:['HD Screens', 'AC'],
+                        numeroPasajeros: 5,
+                        rentaDiaria: 15,
+                        estado: 'Disponible' });
+db.vehiculo.insertOne({ placa: 413517,
+                        capacidadCombustible: '45 galones',
+                        idMarca: 2,
+                        idEstilo: 3,
+                        modelo: 'X-Trail',
+                        color: 'Rojo',
+                        cilindrada: 16,
+                        combustible: 'Hibrido',
+                        transmision: 'Automatica',
+                        año: 2019,
+                        extras:['AC'],
+                        numeroPasajeros: 2,
+                        rentaDiaria: 25,
+                        estado: 'Disponible' });
+db.vehiculo.insertOne({ placa: 413519,
+                        capacidadCombustible: '50 MW',
+                        idMarca: 2,
+                        idEstilo: 1,
+                        modelo: 'Deportivo',
+                        color: 'Negro',
+                        cilindrada: 0,
+                        combustible: 'Electrico',
+                        transmision: 'Automatica',
+                        año: 2020,
+                        extras:['AC'],
+                        numeroPasajeros: 5,
+                        rentaDiaria: 35,
+                        estado: 'Rentado' });
+
+//Coleccion de Clientes
+db.cliente.insertOne({ cedula: 117020190,
+                       nombre: 'Alberto Gonzalez',
+                       correo: 'albego@mail.com',
+                       telefono: '8899-1325' });
+db.cliente.insertOne({ cedula: 119685745,
+                       nombre: 'Sara Hume',
+                       correo: 'diumeo@mail.com',
+                       telefono: '8898-7024' });
+
+//Coleccion de Rentas
+db.renta.insertOne({ placa: 413519,
+                     cedula: 117020190,
+                     diasRentado: 9,
+                     monto: '$315' });
+db.renta.insertOne({ placa: 413513,
+                     cedula: 119685745,
+                     diasRentado: 5,
+                     monto: '$100' });
+
+
+//Consulta de vehiculo segun placa
+db.vehiculo.findOne( {placa: 413512} );
+
+//Consulta de vehiculos segun marca
+db.vehiculo.aggregate([
+        
+        {"$match": { "idMarca": 2 }},
+        {"$lookup": {
+            from: "marca",
+            localField: "idMarca",
+            foreignField: "_id",
+            as: "Marca"
+        }}
+    
+]).pretty();
+
+//Consulta de vehiculo segun rango de precio dario
+db.vehiculo.find( { $and: [ {"rentaDiaria": {"$gt": "15"}}, {"rentaDiaria": {"$lt": "30"}} ]} );
+
+//Consulta de vehiculo segun modelo
+db.vehiculo.find( { "modelo": "X-Trail" }, {_id: 0, "idMarca": 1, "cilindrada": 1, "modelo": 1, "año": 1, "rentaDiaria": 1} );
+
+//Consulta la cantidad de vehiculos
+db.vehiculo.count();
+
+//Consulta el vehiculo con mayor precio diario
+db.vehiculo.find().sort({rentaDiaria:-1}).limit(1).pretty()
+
+//Consulta el vehiculo con menor precio diario
+db.vehiculo.find().sort({rentaDiaria:1}).limit(1).pretty();
+
+//Consulta del promedio de precio diaro por marca
+db.vehiculo.aggregate(
+   [
+     {
+       $group:
+         {
+           "_id": "$idMarca",
+           avgRentaDiaria: { $avg: "$rentaDiaria" }
+         }
+     }
+   ]
+).pretty();
